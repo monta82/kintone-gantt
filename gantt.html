@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>アポガントチャート</title>
+  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.css" />
+  <style>
+    #gantt {
+      width: 100%;
+      height: 600px;
+    }
+  </style>
+</head>
+<body>
+  <h2>スケジュール</h2>
+  <div id="gantt"></div>
+
+  <script>
+    const apiToken = '★ここにあなたのAPIトークンを貼る★';
+    const appId = '50';
+    const domain = 'https://jxuk71mkfqno.cybozu.com';
+
+    fetch(`${domain}/k/v1/records.json?app=${appId}`, {
+      headers: {
+        'X-Cybozu-API-Token': apiToken
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const records = data.records;
+      const tasks = records.map((r) => ({
+        id: r.レコード番号.value,
+        name: r.会社名.value + '（' + r.住所.value + '）',
+        start: r.商談日時.value,
+        end: r.商談終了日時.value,
+        link: `${domain}/k/${appId}/show#record=${r.レコード番号.value}`
+      }));
+
+      const gantt = new Gantt("#gantt", tasks, {
+        on_click: (task) => {
+          // ✅ ここでKintoneのレコード詳細画面に遷移
+          window.open(task.link, '_blank'); // 別タブで開く
+        }
+      });
+    })
+    .catch(err => {
+      console.error("データ取得エラー:", err);
+    });
+  </script>
+</body>
+</html>
